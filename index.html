@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoTrack — Strip Tracking from URLs</title>
+    <meta name="description" content="Remove UTM, fbclid, gclid, and all hidden tracking parameters from URLs. 100% client-side. Nothing leaves your browser.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Unbounded:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #050505;
+            --surface: #0d0d0d;
+            --surface-raised: #131313;
+            --border: #1a1a1a;
+            --border-active: #2a2a2a;
+            --text: #e8e8e8;
+            --text-dim: #6b6b6b;
+            --text-faint: #3d3d3d;
+            --accent: #b8ff57;
+            --accent-dim: #2a3d14;
+            --red: #ff4d4d;
+            --red-dim: #2d1111;
+            --display: 'Unbounded', sans-serif;
+            --mono: 'DM Mono', monospace;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--mono);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 80px 24px 60px;
+        }
+
+        /* Header */
+        .header { margin-bottom: 56px; }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .logo-mark svg { width: 20px; height: 20px; }
+        .logo-text {
+            font-family: var(--display);
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -0.8px;
+            color: var(--text);
+        }
+        .logo-badge {
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-faint);
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            padding: 3px 8px;
+            line-height: 1;
+            margin-left: 2px;
+        }
+        .tagline {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        /* Input */
+        .input-section { margin-bottom: 32px; }
+        .input-label {
+            display: block;
+            font-family: var(--mono);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-faint);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+        .url-input {
+            flex: 1;
+            background: #0d0d0d;
+            border: 1.5px dashed #2a2a2a;
+            border-radius: 8px;
+            padding: 15px 16px;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 13px;
+            outline: none;
+            transition: all 0.15s;
+        }
+        .url-input:hover { border: 1.5px dashed var(--accent); background: rgba(184,255,87,0.07); }
+        .url-input:focus { border: 1.5px dashed var(--accent); background: rgba(184,255,87,0.07); }
+        .url-input::placeholder { color: var(--text-faint); }
+        .url-input.error { border: 1.5px dashed var(--red); background: rgba(255,77,77,0.05); }
+
+        .btn {
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 500;
+            border: 1.5px dashed #2a2a2a;
+            border-radius: 8px;
+            padding: 15px 24px;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: #0d0d0d;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+        .btn:hover { border: 1.5px dashed var(--accent); color: var(--text); background: rgba(184,255,87,0.07); }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #050505;
+            border: 1.5px solid var(--accent);
+            font-weight: 500;
+        }
+        .btn-primary:hover { background: rgba(184,255,87,0.07); border: 1.5px solid var(--accent); color: var(--accent); }
+
+        /* Results */
+        .results { display: none; }
+        .results.visible { display: block; }
+
+        .stats-row {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+        .stat-item { }
+        .stat-num {
+            font-family: var(--display);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+        .stat-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 10px;
+        }
+        .card-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        .card-label-green { color: var(--accent); }
+        .card-label-red { color: var(--red); }
+        .card-label-dim { color: var(--text-faint); }
+
+        .clean-output {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--accent);
+            word-break: break-all;
+            line-height: 1.6;
+            padding: 14px 16px;
+            background: var(--accent-dim);
+            border: 1px solid #3a5a1a;
+            border-radius: 6px;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .removed-list { list-style: none; }
+        .removed-item {
+            font-family: var(--mono);
+            font-size: 11px;
+            padding: 10px 14px;
+            background: var(--red-dim);
+            border-radius: 5px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+        .param-key { color: #ff8080; font-weight: 500; flex-shrink: 0; }
+        .param-val { color: #ff6b6b; opacity: 0.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+
+        .original-output {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-faint);
+            word-break: break-all;
+            line-height: 1.5;
+        }
+
+        .clean-msg {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--accent);
+            text-align: center;
+            padding: 20px;
+            background: var(--accent-dim);
+            border: 1px solid #3a5a1a;
+            border-radius: 8px;
+        }
+
+        /* Info section */
+        .info-section {
+            margin-top: 56px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+        }
+        .info-heading {
+            font-family: var(--display);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 16px;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-heading svg { width: 18px; height: 18px; stroke: var(--accent); flex-shrink: 0; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .info-cell {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            padding: 10px 14px;
+            background: var(--surface);
+            border-radius: 6px;
+            line-height: 1.5;
+        }
+
+        .privacy-box {
+            margin-top: 32px;
+            padding: 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+        .privacy-box .card-label { color: var(--accent); margin-bottom: 10px; }
+        .privacy-box p {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.7;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 56px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-copy {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-faint);
+        }
+        .footer-link {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-faint);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        .footer-link:hover { color: var(--accent); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(16px);
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.2s;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 600px) {
+            .container { padding: 48px 16px 48px; }
+            .logo-text { font-size: 20px; }
+            .input-row { flex-direction: column; }
+            .info-grid { grid-template-columns: 1fr; }
+            .stats-row { gap: 20px; }
+            .footer { flex-direction: column; gap: 8px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-mark">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#050505" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <span class="logo-text">NoTrack</span>
+                <span class="logo-badge">v1.0</span>
+            </div>
+            <p class="tagline">Strip tracking parameters from URLs. 100% client-side &mdash; nothing leaves your browser.</p>
+        </div>
+
+        <div class="input-section">
+            <label class="input-label">Paste URL</label>
+            <div class="input-row">
+                <input type="text" class="url-input" id="urlInput" placeholder="https://example.com/page?utm_source=twitter&fbclid=abc123..." autocomplete="off" spellcheck="false">
+                <button class="btn btn-primary" id="cleanBtn">Clean</button>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="stats-row" id="stats"></div>
+            <div class="card" id="cleanCard">
+                <div class="card-label card-label-green">Clean URL</div>
+                <div class="clean-output" id="cleanUrl"></div>
+                <div class="action-row">
+                    <button class="btn" id="copyBtn">Copy</button>
+                    <button class="btn" id="openBtn">Open</button>
+                </div>
+            </div>
+            <div class="card" id="removedCard">
+                <div class="card-label card-label-red">Removed</div>
+                <ul class="removed-list" id="removedList"></ul>
+            </div>
+            <div class="card">
+                <div class="card-label card-label-dim">Original</div>
+                <div class="original-output" id="originalUrl"></div>
+            </div>
+        </div>
+
+        <div id="nothingFound" style="display:none">
+            <div class="clean-msg">No tracking parameters found. URL is already clean.</div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-heading">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3,6 5,6 21,6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    <path d="M10 11v6M14 11v6"/>
+                    <path d="M9 6V4h6v2"/>
+                </svg>
+                What gets stripped
+            </div>
+            <div class="info-grid">
+                <div class="info-cell">utm_source, utm_medium, utm_campaign, utm_content, utm_term, utm_id</div>
+                <div class="info-cell">fbclid, gclid, gbraid, wbraid, dclid, mc_eid, msclkid</div>
+                <div class="info-cell">twclid, ttclid, li_fat_id, igshid, s_cid, s_kwcid</div>
+                <div class="info-cell">oly_enc_id, oly_anon_id, vero_id, _hsenc, _hsmi</div>
+                <div class="info-cell">mkt_tok, _openstat, yclid, zanpid, _ga, _gl</div>
+                <div class="info-cell">ref, source, click_id, campaign_id, ad_id, irclickid</div>
+            </div>
+
+            <div class="privacy-box">
+                <div class="card-label">Privacy guarantee</div>
+                <p>Your URLs are processed entirely in your browser using JavaScript. No data is sent to any server, no analytics are collected, no cookies are set. The source code is a single HTML file you can audit in 5 minutes.</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span class="footer-copy">&copy; 2026 NoTrack &middot; Open Source &middot; MIT License</span>
+            <a href="https://github.com/gitpushnico" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var TRACKING_PARAMS = [
+            'utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id','utm_cid','utm_reader','utm_name','utm_referrer','utm_social','utm_social-type',
+            'fbclid','fb_action_ids','fb_action_types','fb_ref','fb_source','fbc','fbp',
+            'gclid','gclsrc','gbraid','wbraid','dclid','_ga','_gl','_gac',
+            'msclkid',
+            'twclid','twsrc','twgr','twcamp','twcon',
+            'ttclid','tt_medium','tt_content',
+            'li_fat_id','li_lean_id',
+            'igshid','ig_mid','ig_rid',
+            'mc_eid','mc_cid',
+            '_hsenc','_hsmi','hsa_cam','hsa_grp','hsa_mt','hsa_src','hsa_ad','hsa_acc','hsa_net','hsa_ver','hsa_la','hsa_ol','hsa_kw','hsa_tgt',
+            'mkt_tok',
+            'yclid','_openstat','ym_uid','ym_did',
+            'ref','ref_src','ref_url','source','click_id','campaign_id','ad_id','adset_id',
+            'zanpid','oly_enc_id','oly_anon_id','vero_id','s_cid','s_kwcid',
+            'algo_pvid','algo_exp_id','spm','aff_fcid','aff_fsk','aff_platform','aff_trace_key',
+            'terminal_id','afSmartRedirect','af_xp','af_js_web','af_ss',
+            'wickedid','browser_id','irclickid','irgwc'
+        ];
+
+        var input = document.getElementById('urlInput');
+        var resultsEl = document.getElementById('results');
+        var nothingEl = document.getElementById('nothingFound');
+
+        document.getElementById('cleanBtn').addEventListener('click', cleanUrl);
+        document.getElementById('copyBtn').addEventListener('click', copyClean);
+        document.getElementById('openBtn').addEventListener('click', openClean);
+        input.addEventListener('keydown', function(e) { if (e.key === 'Enter') cleanUrl(); });
+        input.addEventListener('paste', function() { setTimeout(cleanUrl, 50); });
+
+        function cleanUrl() {
+            var raw = input.value.trim();
+            if (!raw) return;
+
+            if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+
+            var url;
+            try { url = new URL(raw); }
+            catch(e) {
+                input.classList.add('error');
+                setTimeout(function() { input.classList.remove('error'); }, 1200);
+                return;
+            }
+
+            var removed = [];
+            var toDelete = [];
+
+            url.searchParams.forEach(function(value, key) {
+                if (TRACKING_PARAMS.indexOf(key.toLowerCase()) !== -1) {
+                    removed.push({ name: key, value: value });
+                    toDelete.push(key);
+                }
+            });
+
+            toDelete.forEach(function(k) { url.searchParams.delete(k); });
+
+            if (url.hash) {
+                var hashTrackers = ['xtor=','at_medium=','at_campaign='];
+                for (var i = 0; i < hashTrackers.length; i++) {
+                    if (url.hash.indexOf(hashTrackers[i]) !== -1) { url.hash = ''; break; }
+                }
+            }
+
+            var cleanStr = url.toString();
+
+            if (removed.length === 0) {
+                resultsEl.classList.remove('visible');
+                nothingEl.style.display = 'block';
+                return;
+            }
+
+            nothingEl.style.display = 'none';
+            resultsEl.classList.add('visible');
+
+            var charsDiff = raw.length - cleanStr.length;
+            document.getElementById('stats').innerHTML =
+                '<div class="stat-item"><div class="stat-num">' + removed.length + '</div><div class="stat-label">trackers stripped</div></div>' +
+                '<div class="stat-item"><div class="stat-num">' + charsDiff + '</div><div class="stat-label">chars removed</div></div>';
+
+            document.getElementById('cleanUrl').textContent = cleanStr;
+
+            var listHtml = '';
+            for (var j = 0; j < removed.length; j++) {
+                listHtml += '<li class="removed-item"><span class="param-key">' + esc(removed[j].name) + '</span><span class="param-val">' + esc(removed[j].value) + '</span></li>';
+            }
+            document.getElementById('removedList').innerHTML = listHtml;
+
+            document.getElementById('originalUrl').textContent = raw;
+        }
+
+        function copyClean() {
+            var text = document.getElementById('cleanUrl').textContent;
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(function() { toast('Copied to clipboard'); });
+        }
+
+        function openClean() {
+            var text = document.getElementById('cleanUrl').textContent;
+            if (!text) return;
+            window.open(text, '_blank', 'noopener,noreferrer');
+        }
+
+        function toast(msg) {
+            var el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(function() { el.classList.remove('show'); }, 1500);
+        }
+
+        function esc(s) {
+            var d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+    </script>
+</body>
+</html>
