@@ -401,12 +401,12 @@
                 What gets stripped
             </div>
             <div class="info-grid">
-                <div class="info-cell">utm_source, utm_medium, utm_campaign, utm_content, utm_term, utm_id</div>
-                <div class="info-cell">fbclid, gclid, gbraid, wbraid, dclid, mc_eid, msclkid</div>
-                <div class="info-cell">twclid, ttclid, li_fat_id, igshid, s_cid, s_kwcid</div>
-                <div class="info-cell">oly_enc_id, oly_anon_id, vero_id, _hsenc, _hsmi</div>
-                <div class="info-cell">mkt_tok, _openstat, yclid, zanpid, _ga, _gl</div>
-                <div class="info-cell">ref, source, click_id, campaign_id, ad_id, irclickid</div>
+                <div class="info-cell">utm_source, utm_medium, utm_campaign, utm_content, utm_term, utm_id + 14 more UTM variants</div>
+                <div class="info-cell">fbclid, gclid, gbraid, wbraid, dclid, msclkid, srsltid, _ga, _gl</div>
+                <div class="info-cell">twclid, ttclid, li_fat_id, igshid, epik, sccid, correlation_id</div>
+                <div class="info-cell">si, pp, ab_channel (YouTube) · si, nd (Spotify) · pt, ct, mt (Apple)</div>
+                <div class="info-cell">_hsenc, _hsmi, mkt_tok, _kx, __s, pk_campaign, mtm_source, mc_eid</div>
+                <div class="info-cell">tag, linkCode, pf_rd_p (Amazon) · tblci, ObOrigUrl, cjevent + 40 more</div>
             </div>
 
             <div class="privacy-box">
@@ -425,23 +425,69 @@
 
     <script>
         var TRACKING_PARAMS = [
-            'utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id','utm_cid','utm_reader','utm_name','utm_referrer','utm_social','utm_social-type',
-            'fbclid','fb_action_ids','fb_action_types','fb_ref','fb_source','fbc','fbp',
-            'gclid','gclsrc','gbraid','wbraid','dclid','_ga','_gl','_gac',
+            // UTM (Google Analytics & universal)
+            'utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id','utm_cid','utm_reader','utm_name','utm_referrer','utm_social','utm_social-type','utm_place','utm_userid','utm_pubreferrer','utm_swu','utm_viz_id','utm_brand','utm_creative_format','utm_marketing_tactic',
+            // Meta / Facebook
+            'fbclid','fb_action_ids','fb_action_types','fb_ref','fb_source','fbc','fbp','fb_beacon_info','fb_comment_id','fb_dtsg_ag',
+            // Google (Ads, Search, Analytics)
+            'gclid','gclsrc','gbraid','wbraid','dclid','_ga','_gl','_gac','srsltid','sca_esv','sxsrf','ei','ved','sa','biw','bih','dpr','gs_lcp','gs_lp','sclient','oq','gs_l','aqs','sourceid','uact','tbs',
+            // Microsoft / Bing
             'msclkid',
-            'twclid','twsrc','twgr','twcamp','twcon',
-            'ttclid','tt_medium','tt_content',
-            'li_fat_id','li_lean_id',
+            // Twitter / X
+            'twclid','twsrc','twgr','twcamp','twcon','twterm',
+            // TikTok
+            'ttclid','tt_medium','tt_content','_d','share_app_id','share_item_id','share_link_id',
+            // YouTube
+            'si','pp','ab_channel','feature',
+            // Spotify
+            'nd',
+            // LinkedIn
+            'li_fat_id','li_lean_id','trackingId','refId','trk',
+            // Instagram
             'igshid','ig_mid','ig_rid',
+            // Pinterest
+            'epik',
+            // Snapchat
+            'sccid','ScCid',
+            // Reddit
+            'correlation_id','ref_campaign','ref_source',
+            // Mailchimp
             'mc_eid','mc_cid',
-            '_hsenc','_hsmi','hsa_cam','hsa_grp','hsa_mt','hsa_src','hsa_ad','hsa_acc','hsa_net','hsa_ver','hsa_la','hsa_ol','hsa_kw','hsa_tgt',
+            // HubSpot
+            '_hsenc','_hsmi','hsa_cam','hsa_grp','hsa_mt','hsa_src','hsa_ad','hsa_acc','hsa_net','hsa_ver','hsa_la','hsa_ol','hsa_kw','hsa_tgt','__hstc','__hssc','__hsfp',
+            // Marketo
             'mkt_tok',
+            // Klaviyo
+            '_kx',
+            // Drip
+            '__s',
+            // Braze
+            '_branch_match_id','_bta_tid','_bta_c',
+            // Piwik / Matomo
+            'pk_campaign','pk_keyword','pk_source','pk_medium','pk_cid','pk_content','mtm_campaign','mtm_source','mtm_medium','mtm_keyword','mtm_cid','mtm_content',
+            // Yandex
             'yclid','_openstat','ym_uid','ym_did',
+            // Adobe / Omniture
+            's_cid','s_kwcid','cid','cmpid','ef_id',
+            // Amazon
+            'tag','linkCode','linkId','pf_rd_p','pf_rd_r','pd_rd_r','pd_rd_w','content-id','pd_rd_wg','ref_',
+            // Mailjet / Sendinblue / Brevo
+            'sib_cuid','sib_msgid',
+            // Apple
+            'pt','ct','mt',
+            // Outbrain
+            'obOrigUrl','OutbrainClickId',
+            // Taboola
+            'tblci',
+            // General / misc tracking
             'ref','ref_src','ref_url','source','click_id','campaign_id','ad_id','adset_id',
-            'zanpid','oly_enc_id','oly_anon_id','vero_id','s_cid','s_kwcid',
+            'zanpid','oly_enc_id','oly_anon_id','vero_id',
             'algo_pvid','algo_exp_id','spm','aff_fcid','aff_fsk','aff_platform','aff_trace_key',
             'terminal_id','afSmartRedirect','af_xp','af_js_web','af_ss',
-            'wickedid','browser_id','irclickid','irgwc'
+            'wickedid','browser_id','irclickid','irgwc',
+            'trk_contact','trk_msg','trk_module','trk_sid',
+            'ICID','icid','rb_clickid','redirect_log_mongo_id','redirect_mongo_id',
+            'cjevent','cjdata','mc_tc','ml_subscriber','ml_subscriber_hash'
         ];
 
         var input = document.getElementById('urlInput');

@@ -28,21 +28,35 @@ This is enforced at multiple levels:
 
 ## What Gets Stripped
 
-* **Google:** gclid, gclsrc, gbraid, wbraid, dclid, _ga, _gl, _gac
-* **Meta / Facebook:** fbclid, fb_action_ids, fb_action_types, fb_ref, fb_source, fbc, fbp
-* **UTM (all platforms):** utm_source, utm_medium, utm_campaign, utm_content, utm_term, utm_id
+* **Google:** gclid, gclsrc, gbraid, wbraid, dclid, srsltid, _ga, _gl, _gac, sca_esv, sxsrf, ei, ved, sa, biw, bih, gs_lcp, sclient, oq, aqs
+* **Meta / Facebook:** fbclid, fb_action_ids, fb_action_types, fb_ref, fb_source, fbc, fbp, fb_beacon_info
+* **UTM (all platforms):** utm_source, utm_medium, utm_campaign, utm_content, utm_term, utm_id + 14 more variants
 * **Microsoft:** msclkid
-* **Twitter / X:** twclid, twsrc, twgr, twcamp, twcon
-* **TikTok:** ttclid, tt_medium, tt_content
-* **LinkedIn:** li_fat_id, li_lean_id
+* **Twitter / X:** twclid, twsrc, twgr, twcamp, twcon, twterm
+* **TikTok:** ttclid, tt_medium, tt_content, _d, share_app_id, share_item_id, share_link_id
+* **YouTube:** si, pp, ab_channel, feature
+* **Spotify:** si, nd
+* **LinkedIn:** li_fat_id, li_lean_id, trackingId, refId, trk
 * **Instagram:** igshid, ig_mid, ig_rid
+* **Pinterest:** epik
+* **Snapchat:** sccid, ScCid
+* **Reddit:** correlation_id, ref_campaign, ref_source
 * **Mailchimp:** mc_eid, mc_cid
-* **HubSpot:** _hsenc, _hsmi, hsa_cam, hsa_grp, hsa_mt, hsa_src, hsa_ad, hsa_acc, hsa_net
+* **HubSpot:** _hsenc, _hsmi, __hstc, __hssc, __hsfp, hsa_cam, hsa_grp, hsa_mt, hsa_src, hsa_ad, hsa_acc, hsa_net
 * **Marketo:** mkt_tok
-* **Yandex:** yclid, _openstat
-* **General:** ref, source, click_id, campaign_id, ad_id, zanpid, oly_enc_id, vero_id, s_cid, s_kwcid, irclickid, irgwc, and more
+* **Klaviyo:** _kx
+* **Drip:** __s
+* **Braze:** _branch_match_id, _bta_tid, _bta_c
+* **Piwik / Matomo:** pk_campaign, pk_keyword, pk_source, pk_medium, pk_cid, pk_content, mtm_campaign, mtm_source, mtm_medium, mtm_keyword, mtm_cid, mtm_content
+* **Yandex:** yclid, _openstat, ym_uid, ym_did
+* **Adobe / Omniture:** s_cid, s_kwcid, cid, cmpid, ef_id
+* **Amazon:** tag, linkCode, linkId, pf_rd_p, pf_rd_r, pd_rd_r, pd_rd_w, content-id, pd_rd_wg, ref_
+* **Apple:** pt, ct, mt
+* **Outbrain:** obOrigUrl, OutbrainClickId
+* **Taboola:** tblci
+* **General:** ref, source, click_id, campaign_id, ad_id, zanpid, irclickid, irgwc, wickedid, cjevent, cjdata, and more
 
-100+ tracking parameters covered.
+190+ tracking parameters covered.
 
 ---
 
